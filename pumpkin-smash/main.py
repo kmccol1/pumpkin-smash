@@ -36,10 +36,23 @@ except ValueError as e:
 # Set the speed of the falling pumpkin ...
 pumpkin_speed = 5
 
+# Set the speed increments...
+speed_increment = 0.1
+
+#Font
+font = pygame.font.Font(None, 36)
+
 # Initalize the score ...
 score = 0
 exploding = False
 explosion_frame = 0
+
+# Define messages ...
+good_message = font.render("Nice!", True, (255, 255, 255))
+miss_message = font.render("Miss!", True, (255,0,0)) # Red for misses...
+message_timer = 0 #Timer to control message display
+message_display_time = 30 #Frames to display the message
+current_message = None
 
 # Set up the font for the score display...
 font = pygame.font.Font(None, 36)
@@ -57,6 +70,12 @@ while running:
                 exploding = True
                 pumpkin_rect.topleft = (random.randint(0, screen_width - pumpkin_rect.width), 0)
 
+                pumpkin_speed += speed_increment
+
+                #Set the great message to display...
+                current_message = good_message
+                message_timer = message_display_time
+
     #Move the pumpkin down...
     if not exploding:
         pumpkin_rect.y += pumpkin_speed
@@ -65,11 +84,23 @@ while running:
         if pumpkin_rect.top > screen_height:
             pumpkin_rect.topleft = (random.randint(0, screen_width - pumpkin_rect.width), 0)
 
+            score = 0
+            pumpkin_speed += speed_increment #Increase the speed for the next fall...
+
+            #Set the miss message to display...
+            current_message = miss_message
+            message_timer = message_display_time
+
     #Clear the screen with sky color or grass color...
     if exploding:
-        screen.fill((255, 204, 0))
+        screen.fill((255, 204, 0)) #Explosion color
     else:
-        screen.fill((0, 153, 0))
+        #Assuming the pumpkin is falling, set the sky color...
+        screen.fill((135, 206, 235))
+
+    # Draw the grass ...
+    grass_rect = pygame.Rect(0, screen.get_height() // 2, screen.get_width(), screen.get_height() // 2)
+    pygame.draw.rect(screen, (0, 153, 0), grass_rect) # Grass color
 
     #Fill the screen with a color (e.g., black)
     #screen.fill((0, 0, 0))
@@ -88,6 +119,15 @@ while running:
     #Render the score ...
     score_text = font.render(f'Score: {score}', True, (255, 255, 255))
     screen.blit(score_text, (10,10))
+
+    #Display the current message...
+    if current_message:
+        screen.blit(current_message, (screen_width // 2 - current_message.get_width() // 2, screen_height // 4))
+
+    #Decrease the timer and clear messages...
+    message_timer -= 1
+    if message_timer <= 0:
+        current_message = None
 
     #Update the display...
     pygame.display.flip()
